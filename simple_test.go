@@ -41,12 +41,12 @@ func generateBytes(b *testing.B, size int, diff int) []byte {
 	return buf.Bytes()
 }
 
-func BenchmarkCompareSimple_50(b *testing.B) {
+func BenchmarkCompareSimple_10(b *testing.B) {
 	var err error
 
 	size := 8 * 1024 * 1024
 	abuf := bytes.NewReader(generateBytes(b, size, 0))
-	bbuf := bytes.NewReader(generateBytes(b, size, 50))
+	bbuf := bytes.NewReader(generateBytes(b, size, 10))
 
 	out := bytes.NewBuffer([]byte{})
 

@@ -27,10 +27,12 @@ var ConfigNoArgs error = errors.New("No Args")
 var ConfigInputFileSize error = errors.New("Invalid Input")
 
 type Config struct {
-	showVersion bool
-	readSize    uint
-	startOffset uint
-	inputFiles  []string
+	showVersion   bool
+	readSize      uint
+	startOffset   uint
+	histogramMode bool
+	unitSize      uint
+	inputFiles    []string
 }
 
 // Pass os.Args[1:]
@@ -43,8 +45,10 @@ func Configure(args []string, silent bool) (*Config, error) {
 
 	opt := flag.NewFlagSet("bin-hikaku", flag.ContinueOnError)
 	opt.BoolVar(&ret.showVersion, "V", false, "show Version")
+	opt.BoolVar(&ret.histogramMode, "H", false, "histogram mode")
 	opt.UintVar(&ret.readSize, "r", 0, "read size to compare.")
 	opt.UintVar(&ret.startOffset, "s", 0, "skip size")
+	opt.UintVar(&ret.unitSize, "u", 4096, "unit size")
 
 	if silent {
 		opt.SetOutput(ioutil.Discard)

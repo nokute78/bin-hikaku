@@ -40,6 +40,40 @@ type CLI struct {
 	quiet     bool // for testing to suppress output
 }
 
+func (cli *CLI) histogram(file1 *os.File, file2 *os.File, cnf *Config) int {
+	unit := cnf.unitSize
+	size := uint(cnf.readSize)
+	if size == 0 {
+		ainfo, err := file1.Stat()
+		if err != nil {
+			fmt.Fprintf(cli.ErrStream, "%s", err)
+			return ExitCmdError
+		}
+		binfo, err := file2.Stat()
+		if err != nil {
+			fmt.Fprintf(cli.ErrStream, "%s", err)
+			return ExitCmdError
+		}
+		if ainfo.Size() > binfo.Size() {
+			size = uint(ainfo.Size())
+		} else {
+			size = uint(binfo.Size())
+		}
+
+	}
+	u, err := Histogram(file1, file2, int64(cnf.startOffset), size, unit)
+	if err != nil {
+		fmt.Fprintf(cli.ErrStream, "%s", err)
+		return ExitCmdError
+	}
+	err = PrintHistogram(cli.OutStream, u, uint(cnf.startOffset), int(unit))
+	if err != nil {
+		fmt.Fprintf(cli.ErrStream, "%s", err)
+		return ExitCmdError
+	}
+	return ExitOK
+}
+
 // Run executes real main function.
 func (cli *CLI) Run(args []string) (ret int) {
 	cnf, err := Configure(args[1:], cli.quiet)
@@ -74,6 +108,9 @@ func (cli *CLI) Run(args []string) (ret int) {
 	}
 	defer file2.Close()
 
+	if cnf.histogramMode {
+		return cli.histogram(file1, file2, cnf)
+	}
 	err = CompareSimple(cli.OutStream, file1, file2, int64(cnf.startOffset), cnf.readSize)
 	if err != nil {
 		fmt.Fprintf(cli.ErrStream, "%s", err)
